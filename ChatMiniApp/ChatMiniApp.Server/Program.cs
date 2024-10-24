@@ -25,6 +25,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 app.UseCors();
@@ -33,7 +34,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapFallbackToFile("/index.html");
+
 app.MapHub<ChatHub>("/chat-hub");
 
 app.Run();

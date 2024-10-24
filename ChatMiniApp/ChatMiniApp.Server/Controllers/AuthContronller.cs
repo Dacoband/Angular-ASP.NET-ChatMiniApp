@@ -12,7 +12,7 @@ namespace ChatMiniApp.Server.Controllers
     public sealed class AuthContronller(ApplicationDbContext context) : ControllerBase
     {
         [HttpPost("login")]
-        public async Task<IActionResult> Register(RegisterDTO request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Register([FromForm]RegisterDTO request, CancellationToken cancellationToken)
         {
             bool isNameExists = await context.Users.AnyAsync(x => x.Name == request.Name, cancellationToken);
             if (isNameExists)
@@ -28,7 +28,7 @@ namespace ChatMiniApp.Server.Controllers
             };
             await context.AddAsync(user, cancellationToken);
             await context.SaveChangesAsync();
-            return NoContent();
+            return Ok(user);
         }
 
         [HttpPost("login")]

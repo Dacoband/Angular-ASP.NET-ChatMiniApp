@@ -2,14 +2,13 @@
 using ChatMiniApp.Server.DTOs;
 using ChatMiniApp.Server.Hubs;
 using ChatMiniApp.Server.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatMiniApp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public sealed class ChatController(ApplicationDbContext context, IHubContext<ChatHub> hubContext) : ControllerBase
     {
@@ -21,6 +20,12 @@ namespace ChatMiniApp.Server.Controllers
                 .OrderBy(x => x.Date)
                 .ToListAsync(cancellationToken);
             return Ok(chats);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
+        {
+            List<User> users = await context.Users.OrderBy(x => x.Name).ToListAsync();
+            return Ok(users);
         }
         [HttpPost]
         public async Task<IActionResult> SendMessage(SendMessageDTO request, CancellationToken cancellationToken)
@@ -34,8 +39,9 @@ namespace ChatMiniApp.Server.Controllers
             };
             await context.AddAsync(chat, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
+
             string connectionId = ChatHub.Users.First(v => v.Value == chat.ToUserId).Key;
-            await hubContext.Clients.All.SendAsync("ReceiveMessage", chat);
+            await hubContext.Clients.Client(connectionId).SendAsync("ReceiveMessage", chat);
             return Ok();
         }
     }
